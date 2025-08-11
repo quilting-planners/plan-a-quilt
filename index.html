@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quilt Planner</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <h1>Plan a quilt</h1>
+    <button id="resetBtn" class="btn secondary" type="button" title="Reset all fields">Reset</button>
+  </header>
+
+  <main class="container">
+    <section class="planner">
+      <nav class="steps" aria-label="Steps">
+        <button class="step current" data-step="1">1. Purpose</button>
+        <button class="step" data-step="2">2. Size</button>
+        <button class="step" data-step="3">3. Design</button>
+        <button class="step" data-step="4">4. Fabric</button>
+        <button class="step" data-step="5">5. Plan</button>
+      </nav>
+
+      <form id="plannerForm" novalidate>
+        <!-- Step 1: Purpose -->
+        <fieldset class="card step-panel current" data-step-panel="1">
+          <legend>Purpose</legend>
+          <div class="grid">
+            <label>
+              Quilt name
+              <input id="quiltName" name="quiltName" type="text" placeholder="My Cozy Quilt" />
+            </label>
+            <label>
+              Who is it for?
+              <input id="recipient" name="recipient" type="text" placeholder="Recipient / Occasion" />
+            </label>
+          </div>
+          <label class="block">
+            Notes
+            <textarea id="notes" name="notes" rows="3" placeholder="Any special ideas or constraints"></textarea>
+          </label>
+          <div class="actions">
+            <button class="btn next" data-next="2" type="button">Next</button>
+          </div>
+        </fieldset>
+
+        <!-- Step 2: Size -->
+        <fieldset class="card step-panel" data-step-panel="2">
+          <legend>Size</legend>
+          <div class="grid three">
+            <label>
+              Columns (blocks across)
+              <input id="cols" name="cols" type="number" min="1" value="6" />
+            </label>
+            <label>
+              Rows (blocks down)
+              <input id="rows" name="rows" type="number" min="1" value="8" />
+            </label>
+            <label>
+              Block size (inches)
+              <input id="blockIn" name="blockIn" type="number" min="1" value="10" />
+            </label>
+          </div>
+          <div class="grid three">
+            <label>
+              Sashing (inches)
+              <input id="sashingIn" name="sashingIn" type="number" min="0" step="0.25" value="0" />
+            </label>
+            <label>
+              Border (inches)
+              <input id="borderIn" name="borderIn" type="number" min="0" step="0.5" value="0" />
+            </label>
+            <label>
+              Seam allowance
+              <select id="seamIn" name="seamIn">
+                <option value="0.25">¼ in</option>
+                <option value="0.375">⅜ in</option>
+                <option value="0.5">½ in</option>
+              </select>
+            </label>
+          </div>
+          <p class="help">We’ll show finished top dimensions based on your inputs.</p>
+          <div class="actions">
+            <button class="btn prev" data-prev="1" type="button">Back</button>
+            <button class="btn next" data-next="3" type="button">Next</button>
+          </div>
+        </fieldset>
+
+        <!-- Step 3: Design -->
+        <fieldset class="card step-panel" data-step-panel="3">
+          <legend>Design</legend>
+          <div class="grid three">
+            <label>
+              Color A
+              <input id="colorA" name="colorA" type="color" value="#eab308" />
+            </label>
+            <label>
+              Color B
+              <input id="colorB" name="colorB" type="color" value="#22c55e" />
+            </label>
+            <label>
+              Color C
+              <input id="colorC" name="colorC" type="color" value="#3b82f6" />
+            </label>
+          </div>
+          <label class="block">
+            Pattern
+            <select id="pattern" name="pattern">
+              <option value="checker">Checker</option>
+              <option value="stripes">Stripes</option>
+              <option value="random">Random</option>
+            </select>
+          </label>
+          <div class="actions">
+            <button class="btn prev" data-prev="2" type="button">Back</button>
+            <button class="btn next" data-next="4" type="button">Next</button>
+          </div>
+        </fieldset>
+
+        <!-- Step 4: Fabric estimates -->
+        <fieldset class="card step-panel" data-step-panel="4">
+          <legend>Fabric</legend>
+          <p class="help">These are safe, rounded estimates for planning. Always buy a little extra.</p>
+          <div id="fabricTable" class="table"></div>
+          <div class="actions">
+            <button class="btn prev" data-prev="3" type="button">Back</button>
+            <button class="btn next" data-next="5" type="button">Next</button>
+          </div>
+        </fieldset>
+
+        <!-- Step 5: Plan -->
+        <fieldset class="card step-panel" data-step-panel="5">
+          <legend>Plan</legend>
+          <div class="actions padless">
+            <button id="copyBtn" class="btn" type="button">Copy plan</button>
+            <button id="downloadBtn" class="btn secondary" type="button">Download JSON</button>
+          </div>
+          <pre id="planOut" class="plan"></pre>
+          <div class="actions">
+            <button class="btn prev" data-prev="4" type="button">Back</button>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+
+    <aside class="preview">
+      <canvas id="previewCanvas" width="600" height="600" aria-label="Quilt preview"></canvas>
+      <div id="dimOut" class="dims" aria-live="polite"></div>
+    </aside>
+  </main>
+
+  <footer class="site-footer">
+    <p>Built for GitHub Pages. No frameworks. Mobile-first.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
