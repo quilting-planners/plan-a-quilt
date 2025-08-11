@@ -62,6 +62,17 @@ function setSummary(){
 
 function titleCase(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
 
+
+// Update header 'Edit/Cancel' labels (driven by aria-expanded)
+function refreshEditLabels(){
+  $$('.step').forEach(sec=>{
+    const link = sec.querySelector('.edit-link');
+    if(!link) return;
+    const bodyVisible = !sec.classList.contains('collapsed');
+    link.setAttribute('aria-expanded', String(bodyVisible));
+  });
+}
+
 // Expand/collapse steps
 $$('.edit-link').forEach(btn=>{
   btn.addEventListener('click', e=>{
@@ -69,7 +80,9 @@ $$('.edit-link').forEach(btn=>{
     toggleStep(step);
   });
 });
+
 function toggleStep(step){
+
   $$('.step').forEach(sec=>{
     if(sec.dataset.step === step){
       const isCollapsed = sec.classList.contains('collapsed');
@@ -81,6 +94,7 @@ function toggleStep(step){
     }
   });
   window.scrollTo({top: $('.step[data-step="'+step+'"]').offsetTop-10, behavior:'smooth'});
+  refreshEditLabels();
 }
 
 // Next/back
@@ -88,6 +102,7 @@ $$('.btn.next').forEach(btn=>{
   btn.addEventListener('click', e=>{
     updateStateFromForm();
     setSummary();
+refreshEditLabels();
     const next = e.currentTarget.dataset.next;
     toggleStep(next);
   });
@@ -110,6 +125,7 @@ $('#resetAll2').addEventListener('click', resetAll);
 $('#seePlan').addEventListener('click', ()=>{
   updateStateFromForm();
   setSummary();
+refreshEditLabels();
   computeAndRenderPlan();
   $('#plannerForm').hidden = true;
   $('#planView').hidden = false;
@@ -296,3 +312,4 @@ function round2(x){ return Math.round(x*100)/100; }
 // init
 toggleStep('1');
 setSummary();
+refreshEditLabels();

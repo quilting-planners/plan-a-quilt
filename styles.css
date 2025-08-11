@@ -8,7 +8,7 @@
   --accent: #531FFF;
   --accent-600: #3d18d6;
   --radius: 4px;
-  --shadow: 0 1px 2px rgba(0,0,0,.05), 0 8px 24px rgba(0,0,0,.06);
+  --shadow: 0 0 0 rgba(0,0,0,0);
 }
 
 *{box-sizing:border-box}
@@ -110,3 +110,22 @@ label.choice input[type="radio"],label.checkbox input[type="checkbox"]{inline-si
 /* Design exactness adjustments */
 .btn, .card, .input-suffix input { border-radius: 4px; }
 .badge { border-radius: 12px; } /* keep pill for the number */
+
+/* Closer match to provided mockups */
+.card{ box-shadow:none; }
+.app-header h1{ font-size:20px; font-weight:600; }
+.step .step-titles h2{ font-size:16px; font-weight:600; }
+.small{ font-size:12px; }
+.muted{ color:#6b7280; }
+.link{ color:#531FFF; text-decoration:none; }
+.link:hover{ text-decoration:underline; }
+.keyvals{ background:none; grid-template-columns:1fr 1fr 1fr; }
+.keyvals>div{ background:none; border:0; padding:0; }
+.keyvals .muted.small{ display:block; }
+.badge{ width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:13px; }
+.step .edit-link[aria-expanded="true"]::after{ content:"Cancel"; }
+.step .edit-link[aria-expanded="false"]::after{ content:"Edit"; }
+.step .edit-link{ color:#6b7280; }
+.step .edit-link span{ display:none; }
+.step .edit-link{ position:relative; width:auto; }
+.app-footer{ color:#6b7280; font-size:12px; }
