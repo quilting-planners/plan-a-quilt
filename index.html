@@ -10,27 +10,26 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main id="app" class="container">
+  <main class="container">
     <header class="app-header">
-      <a class="back-link" id="backToForm" href="#" aria-label="Back to planner" hidden>&larr; <span id="planTitleCrumb">Plan a quilt</span></a>
       <h1>Plan a quilt</h1>
     </header>
 
-    <!-- Steps -->
+    <!-- STEPS -->
     <form id="plannerForm" novalidate>
       <!-- Step 1 -->
       <section class="card step" data-step="1">
         <div class="step-header">
-          <div class="badge">1</div>
+          <div class="badge" aria-hidden="true">1</div>
           <div class="step-titles">
             <h2>Purpose</h2>
-            <p class="muted small">Bed cover</p>
+            <p class="muted small" id="purposeSummary">Bed cover</p>
           </div>
           <button type="button" class="link sm edit-link" data-edit="1" aria-expanded="true">Edit</button>
         </div>
         <div class="step-body">
           <fieldset>
-            <legend class="sr-only">What are you quilting?</legend>
+            <legend>What are you quilting?</legend>
             <label class="choice">
               <input type="radio" name="purpose" value="bed" checked />
               <span>Bed cover</span>
@@ -41,7 +40,7 @@
             </label>
           </fieldset>
           <div class="step-actions">
-            <button type="button" class="btn next" data-next="2" aria-label="Next to size">Next <span class="arrow">→</span></button>
+            <button type="button" class="btn next" data-next="2">Next <span class="arrow">→</span></button>
           </div>
         </div>
       </section>
@@ -49,7 +48,7 @@
       <!-- Step 2 -->
       <section class="card step collapsed" data-step="2">
         <div class="step-header">
-          <div class="badge">2</div>
+          <div class="badge" aria-hidden="true">2</div>
           <div class="step-titles">
             <h2>Size</h2>
             <p class="muted small" id="sizeSummary">Full/double · 0–10” overhang</p>
@@ -58,7 +57,7 @@
         </div>
         <div class="step-body">
           <fieldset class="mb-20">
-            <legend class="sr-only">Bed size</legend>
+            <legend>Bed size</legend>
             <div class="choices-grid">
               <label class="choice"><input type="radio" name="bedSize" value="crib"><span>Crib</span></label>
               <label class="choice"><input type="radio" name="bedSize" value="twin"><span>Twin</span></label>
@@ -73,7 +72,7 @@
             <div class="field-row">
               <label for="overhangSides">Sides of bed</label>
               <div class="input-suffix">
-                <input id="overhangSides" name="overhangSides" type="number" min="0" step="1" value="10">
+                <input id="overhangSides" name="overhangSides" type="number" min="0" step="1" value="10" inputmode="numeric">
                 <span class="suffix">in.</span>
               </div>
             </div>
@@ -81,19 +80,162 @@
               <div>
                 <label for="overhangFoot">Foot of bed</label>
                 <div class="input-suffix">
-                  <input id="overhangFoot" name="overhangFoot" type="number" min="0" step="1" value="10">
+                  <input id="overhangFoot" name="overhangFoot" type="number" min="0" step="1" value="10" inputmode="numeric">
                   <span class="suffix">in.</span>
                 </div>
               </div>
               <div>
                 <label for="overhangHead">Head of bed</label>
                 <div class="input-suffix">
-                  <input id="overhangHead" name="overhangHead" type="number" min="0" step="1" value="0">
+                  <input id="overhangHead" name="overhangHead" type="number" min="0" step="1" value="0" inputmode="numeric">
                   <span class="suffix">in.</span>
                 </div>
               </div>
             </div>
           </fieldset>
+          <div class="step-actions between">
+            <button type="button" class="link sm" data-back="1">Back</button>
+            <button type="button" class="btn next" data-next="3">Next <span class="arrow">→</span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 3 -->
+      <section class="card step collapsed" data-step="3">
+        <div class="step-header">
+          <div class="badge" aria-hidden="true">3</div>
+          <div class="step-titles">
+            <h2>Design</h2>
+            <p class="muted small" id="designSummary">9” x 9” blocks · 1” sashing with cornerstones · 1” border</p>
+          </div>
+          <button type="button" class="link sm edit-link" data-edit="3" aria-expanded="false">Edit</button>
+        </div>
+        <div class="step-body">
+          <fieldset class="mb-16">
+            <legend>Finished block size</legend>
+            <label class="choice"><input type="radio" name="blockSize" value="3"><span>3” x 3”</span></label>
+            <label class="choice"><input type="radio" name="blockSize" value="6"><span>6” x 6”</span></label>
+            <label class="choice"><input type="radio" name="blockSize" value="9" checked><span>9” x 9”</span></label>
+            <label class="choice"><input type="radio" name="blockSize" value="10"><span>10” x 10”</span></label>
+            <label class="choice"><input type="radio" name="blockSize" value="12"><span>12” x 12”</span></label>
+            <label class="choice custom"><input type="radio" name="blockSize" value="custom"><span>Custom</span></label>
+          </fieldset>
+
+          <fieldset class="mb-16">
+            <legend>Sashing <span class="muted small block">Fabric strips between blocks</span></legend>
+            <label class="choice"><input type="radio" name="sashing" value="1" checked><span>1”</span></label>
+            <label class="choice"><input type="radio" name="sashing" value="2"><span>2”</span></label>
+            <label class="choice"><input type="radio" name="sashing" value="3"><span>3”</span></label>
+            <label class="choice custom"><input type="radio" name="sashing" value="custom"><span>Custom</span></label>
+          </fieldset>
+
+          <fieldset class="mb-16">
+            <legend>Cornerstones <span class="muted small block">Small squares at sashing intersections</span></legend>
+            <label class="checkbox"><input type="checkbox" id="cornerstones"><span>Add cornerstones to sashing</span></label>
+          </fieldset>
+
+          <fieldset class="mb-8">
+            <legend>Border <span class="muted small block">Fabric frame around the quilt inside binding</span></legend>
+            <label class="choice"><input type="radio" name="border" value="1" checked><span>1”</span></label>
+            <label class="choice"><input type="radio" name="border" value="2"><span>2”</span></label>
+            <label class="choice"><input type="radio" name="border" value="3"><span>3”</span></label>
+            <label class="choice custom"><input type="radio" name="border" value="custom"><span>Custom</span></label>
+          </fieldset>
+
+          <div class="step-actions between">
+            <button type="button" class="link sm" data-back="2">Back</button>
+            <button type="button" class="btn next" data-next="4">Next <span class="arrow">→</span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4 -->
+      <section class="card step collapsed" data-step="4">
+        <div class="step-header">
+          <div class="badge" aria-hidden="true">4</div>
+          <div class="step-titles">
+            <h2>Fabric settings</h2>
+            <p class="muted small" id="fabricSummary">44–58” fabric · $8–10/yd · 1/4” seam allowance · 2 1/4 binding</p>
+          </div>
+          <button type="button" class="link sm edit-link" data-edit="4" aria-expanded="false">Edit</button>
+        </div>
+        <div class="step-body">
+          <fieldset class="mb-20">
+            <legend>Width of fabric (WOF)</legend>
+            <p class="muted small">Standard WOF is 44”</p>
+            <div class="field-row two-col">
+              <label>Blocks
+                <div class="input-suffix">
+                  <input type="number" id="wofBlocks" value="44" min="36" max="60" step="1" />
+                  <span class="suffix">in.</span>
+                </div>
+              </label>
+              <label>Sashing
+                <div class="input-suffix">
+                  <input type="number" id="wofSashing" value="44" min="36" max="60" step="1" />
+                  <span class="suffix">in.</span>
+                </div>
+              </label>
+            </div>
+            <div class="field-row two-col">
+              <label>Cornerstones
+                <div class="input-suffix">
+                  <input type="number" id="wofCorner" value="44" min="36" max="60" step="1" />
+                  <span class="suffix">in.</span>
+                </div>
+              </label>
+              <label>Border
+                <div class="input-suffix">
+                  <input type="number" id="wofBorder" value="44" min="36" max="60" step="1" />
+                  <span class="suffix">in.</span>
+                </div>
+              </label>
+            </div>
+            <div class="field-row two-col">
+              <label>Binding
+                <div class="input-suffix">
+                  <input type="number" id="wofBinding" value="44" min="36" max="60" step="1" />
+                  <span class="suffix">in.</span>
+                </div>
+              </label>
+              <label>Backing
+                <div class="input-suffix">
+                  <input type="number" id="wofBacking" value="44" min="36" max="120" step="1" />
+                  <span class="suffix">in.</span>
+                </div>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="mb-20">
+            <legend>Estimated cost of fabric</legend>
+            <div class="field-row two-col">
+              <label>Blocks <div class="input-suffix"><input id="costBlocks" type="number" value="10" min="1"><span class="suffix">/yd</span></div></label>
+              <label>Sashing <div class="input-suffix"><input id="costSashing" type="number" value="10" min="1"><span class="suffix">/yd</span></div></label>
+            </div>
+            <div class="field-row two-col">
+              <label>Cornerstones <div class="input-suffix"><input id="costCorner" type="number" value="10" min="1"><span class="suffix">/yd</span></div></label>
+              <label>Border <div class="input-suffix"><input id="costBorder" type="number" value="10" min="1"><span class="suffix">/yd</span></div></label>
+            </div>
+            <div class="field-row two-col">
+              <label>Binding <div class="input-suffix"><input id="costBinding" type="number" value="10" min="1"><span class="suffix">/yd</span></div></label>
+              <label>Backing <div class="input-suffix"><input id="costBacking" type="number" value="10" min="1"><span class="suffix">/yd</span></div></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="mb-20">
+            <legend>Seam allowance</legend>
+            <label class="choice"><input type="radio" name="seam" value="0.25" checked><span>1/4”</span></label>
+            <label class="choice custom"><input type="radio" name="seam" value="custom"><span>Custom</span></label>
+          </fieldset>
+
+          <fieldset class="mb-8">
+            <legend>Width to cut binding strips</legend>
+            <label class="choice"><input type="radio" name="bindingCut" value="2.25" checked><span>2 1/4”</span></label>
+            <label class="choice"><input type="radio" name="bindingCut" value="2.5"><span>2 1/2”</span></label>
+            <label class="choice custom"><input type="radio" name="bindingCut" value="custom"><span>Custom</span></label>
+          </fieldset>
+
           <div class="step-actions between">
             <button type="button" class="link sm" data-back="3">Back</button>
           </div>
@@ -101,16 +243,16 @@
       </section>
 
       <div class="form-footer between">
-        <button type="button" class="link" id="resetAll">⟲ Clear &amp; start over</button>
+        <button type="button" class="link" id="resetAll">Clear &amp; start over</button>
         <button type="button" class="btn see-plan" id="seePlan">See plan <span class="arrow">→</span></button>
       </div>
     </form>
 
-    <!-- Plan view -->
+    <!-- PLAN VIEW -->
     <section id="planView" class="plan" hidden aria-live="polite">
       <a href="#" class="back-link" id="backToEdit">← Queen bed quilt</a>
 
-      <div class="grid plan-grid">
+      <div class="plan-grid">
         <article class="card">
           <h3>Dimensions</h3>
           <div class="dims">
@@ -124,7 +266,7 @@
 
         <article class="card">
           <h3>Estimated cost</h3>
-          <div class="keyvals">
+          <div class="kv">
             <div><div class="muted small">Total</div><div id="costTotal">$0</div></div>
             <div><div class="muted small">Fabric</div><div id="costFabric">$0</div></div>
             <div><div class="muted small">Batting</div><div id="costBatting">$0</div></div>
@@ -163,15 +305,15 @@
         </article>
 
         <div class="form-footer between">
-          <button type="button" class="link" id="resetAll2">⟲ Clear &amp; start over</button>
-          <a class="link" href="https://forms.gle/" target="_blank" rel="noopener">Give feedback ↗</a>
+          <button type="button" class="link" id="resetAll2">Clear &amp; start over</button>
+          <a class="link" href="#" target="_blank" rel="noopener">Give feedback</a>
         </div>
       </div>
     </section>
   </main>
 
   <footer class="app-footer">
-    <p>Designed by <a href="#" rel="author">Emily Gilles</a>. Built in Figma Make.</p>
+    <p>Designed by Emily Gilles. Built in Figma Make.</p>
   </footer>
 
   <script src="app.js"></script>
