@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -6,176 +6,311 @@
   <title>Plan a quilt</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="min-h-screen bg-white text-slate-900">
-  <header class="w-full border-b border-slate-200">
-    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-3">
-      <h1 class="text-lg font-semibold">Plan a quilt</h1>
-      <div class="flex items-center gap-2">
-        <button id="resetBtn" class="btn-secondary">Reset</button>
-        <a class="btn-outline" href="https://github.com/new" target="_blank" rel="noopener">Upload to GitHub</a>
+<body>
+  <main id="app" class="container">
+    <header class="app-header">
+      <a class="back-link" id="backToForm" href="#" aria-label="Back to planner" hidden>&larr; <span id="planTitleCrumb">Plan a quilt</span></a>
+      <h1>Plan a quilt</h1>
+    </header>
+
+    <!-- Steps -->
+    <form id="plannerForm" novalidate>
+      <!-- Step 1 -->
+      <section class="card step" data-step="1">
+        <div class="step-header">
+          <div class="badge">1</div>
+          <div class="step-titles">
+            <h2>Purpose</h2>
+            <p class="muted small">Bed cover</p>
+          </div>
+          <button type="button" class="link sm edit-link" data-edit="1" aria-expanded="true">Edit</button>
+        </div>
+        <div class="step-body">
+          <fieldset>
+            <legend class="sr-only">What are you quilting?</legend>
+            <label class="choice">
+              <input type="radio" name="purpose" value="bed" checked />
+              <span>Bed cover</span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="purpose" value="throw" />
+              <span>Throw blanket</span>
+            </label>
+          </fieldset>
+          <div class="step-actions">
+            <button type="button" class="btn next" data-next="2" aria-label="Next to size">Next <span class="arrow">→</span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2 -->
+      <section class="card step collapsed" data-step="2">
+        <div class="step-header">
+          <div class="badge">2</div>
+          <div class="step-titles">
+            <h2>Size</h2>
+            <p class="muted small" id="sizeSummary">Full/double · 0–10” overhang</p>
+          </div>
+          <button type="button" class="link sm edit-link" data-edit="2" aria-expanded="false">Edit</button>
+        </div>
+        <div class="step-body">
+          <fieldset class="mb-20">
+            <legend class="sr-only">Bed size</legend>
+            <div class="choices-grid">
+              <label class="choice"><input type="radio" name="bedSize" value="crib"><span>Crib</span></label>
+              <label class="choice"><input type="radio" name="bedSize" value="twin"><span>Twin</span></label>
+              <label class="choice"><input type="radio" name="bedSize" value="full" checked><span>Full/double</span></label>
+              <label class="choice"><input type="radio" name="bedSize" value="queen"><span>Queen</span></label>
+              <label class="choice"><input type="radio" name="bedSize" value="king"><span>King</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Mattress overhang</legend>
+            <div class="field-row">
+              <label for="overhangSides">Sides of bed</label>
+              <div class="input-suffix">
+                <input id="overhangSides" name="overhangSides" type="number" min="0" step="1" value="10">
+                <span class="suffix">in.</span>
+              </div>
+            </div>
+            <div class="field-row two-col">
+              <div>
+                <label for="overhangFoot">Foot of bed</label>
+                <div class="input-suffix">
+                  <input id="overhangFoot" name="overhangFoot" type="number" min="0" step="1" value="10">
+                  <span class="suffix">in.</span>
+                </div>
+              </div>
+              <div>
+                <label for="overhangHead">Head of bed</label>
+                <div class="input-suffix">
+                  <input id="overhangHead" name="overhangHead" type="number" min="0" step="1" value="0">
+                  <span class="suffix">in.</span>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+          <div class="step-actions between">
+            <button type="button" class="link sm" data-back="1">Back</button>
+            <button type="button" class="btn next" data-next="3">Next <span class="arrow">→</span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 3 -->
+      <section class="card step collapsed" data-step="3">
+        <div class="step-header">
+          <div class="badge">3</div>
+          <div class="step-titles">
+            <h2>Design</h2>
+            <p class="muted small" id="designSummary">9” × 9” blocks · 1” sashing with cornerstones · 1” border</p>
+          </div>
+          <button type="button" class="link sm edit-link" data-edit="3" aria-expanded="false">Edit</button>
+        </div>
+        <div class="step-body">
+          <fieldset class="mb-16">
+            <legend>Finished block size</legend>
+            <label class="choice"><input type="radio" name="blockSize" value="3"><span>3” × 3”</span></label>
+            <label class="choice"><input type="radio" name="blockSize" value="6"><span>6” × 6”</span></label>
+            <label class="choice"><input type="radio" name="blockSize" value="9" checked><span>9” × 9”</span></label>
+            <label class="choice"><input type="radio" name="blockSize" value="10"><span>10” × 10”</span></label>
+            <label class="choice"><input type="radio" name="blockSize" value="12"><span>12” × 12”</span></label>
+          </fieldset>
+
+          <fieldset class="mb-16">
+            <legend>Sashing <span class="muted small">Fabric strips between blocks</span></legend>
+            <label class="choice"><input type="radio" name="sashing" value="1" checked><span>1”</span></label>
+            <label class="choice"><input type="radio" name="sashing" value="2"><span>2”</span></label>
+            <label class="choice"><input type="radio" name="sashing" value="3"><span>3”</span></label>
+          </fieldset>
+
+          <fieldset class="mb-16">
+            <legend>Cornerstones <span class="muted small">Small squares at sashing intersections</span></legend>
+            <label class="checkbox"><input type="checkbox" id="cornerstones"><span>Add cornerstones to sashing</span></label>
+          </fieldset>
+
+          <fieldset class="mb-8">
+            <legend>Border <span class="muted small">Fabric frame around the quilt inside binding</span></legend>
+            <label class="choice"><input type="radio" name="border" value="0"><span>None</span></label>
+            <label class="choice"><input type="radio" name="border" value="1" checked><span>1”</span></label>
+            <label class="choice"><input type="radio" name="border" value="2"><span>2”</span></label>
+            <label class="choice"><input type="radio" name="border" value="3"><span>3”</span></label>
+          </fieldset>
+
+          <div class="step-actions between">
+            <button type="button" class="link sm" data-back="2">Back</button>
+            <button type="button" class="btn next" data-next="4">Next <span class="arrow">→</span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4 -->
+      <section class="card step collapsed" data-step="4">
+        <div class="step-header">
+          <div class="badge">4</div>
+          <div class="step-titles">
+            <h2>Fabric settings</h2>
+            <p class="muted small" id="fabricSummary">44–58” fabric · $8–10/yd · 1/4” seam allowance · 2 1/4 binding</p>
+          </div>
+          <button type="button" class="link sm edit-link" data-edit="4" aria-expanded="false">Edit</button>
+        </div>
+        <div class="step-body">
+          <fieldset class="mb-20">
+            <legend>Width of fabric (WOF) <span class="muted small">Standard WOF is 44”</span></legend>
+            <div class="field-row two-col">
+              <label>Blocks
+                <div class="input-suffix">
+                  <input type="number" id="wofBlocks" value="44" min="36" max="60" step="1" />
+                  <span class="suffix">in.</span>
+                </div>
+              </label>
+              <label>Sashing
+                <div class="input-suffix">
+                  <input type="number" id="wofSashing" value="44" min="36" max="60" step="1" />
+                  <span class="suffix">in.</span>
+                </div>
+              </label>
+            </div>
+            <div class="field-row two-col">
+              <label>Cornerstones
+                <div class="input-suffix">
+                  <input type="number" id="wofCorner" value="44" min="36" max="60" step="1" />
+                  <span class="suffix">in.</span>
+                </div>
+              </label>
+              <label>Border
+                <div class="input-suffix">
+                  <input type="number" id="wofBorder" value="44" min="36" max="60" step="1" />
+                  <span class="suffix">in.</span>
+                </div>
+              </label>
+            </div>
+            <div class="field-row two-col">
+              <label>Binding
+                <div class="input-suffix">
+                  <input type="number" id="wofBinding" value="44" min="36" max="60" step="1" />
+                  <span class="suffix">in.</span>
+                </div>
+              </label>
+              <label>Backing
+                <div class="input-suffix">
+                  <input type="number" id="wofBacking" value="44" min="36" max="120" step="1" />
+                  <span class="suffix">in.</span>
+                </div>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="mb-20">
+            <legend>Estimated cost of fabric</legend>
+            <div class="field-row two-col">
+              <label>Blocks <div class="input-suffix"><input id="costBlocks" type="number" value="10" min="1"><span class="suffix">/yd</span></div></label>
+              <label>Sashing <div class="input-suffix"><input id="costSashing" type="number" value="10" min="1"><span class="suffix">/yd</span></div></label>
+            </div>
+            <div class="field-row two-col">
+              <label>Cornerstones <div class="input-suffix"><input id="costCorner" type="number" value="10" min="1"><span class="suffix">/yd</span></div></label>
+              <label>Border <div class="input-suffix"><input id="costBorder" type="number" value="10" min="1"><span class="suffix">/yd</span></div></label>
+            </div>
+            <div class="field-row two-col">
+              <label>Binding <div class="input-suffix"><input id="costBinding" type="number" value="10" min="1"><span class="suffix">/yd</span></div></label>
+              <label>Backing <div class="input-suffix"><input id="costBacking" type="number" value="10" min="1"><span class="suffix">/yd</span></div></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="mb-20">
+            <legend>Seam allowance</legend>
+            <label class="choice"><input type="radio" name="seam" value="0.25" checked><span>1/4”</span></label>
+            <label class="choice"><input type="radio" name="seam" value="0.5"><span>1/2”</span></label>
+          </fieldset>
+
+          <fieldset class="mb-8">
+            <legend>Width to cut binding strips</legend>
+            <label class="choice"><input type="radio" name="bindingCut" value="2.25" checked><span>2 1/4”</span></label>
+            <label class="choice"><input type="radio" name="bindingCut" value="2.5"><span>2 1/2”</span></label>
+          </fieldset>
+
+          <div class="step-actions between">
+            <button type="button" class="link sm" data-back="3">Back</button>
+            <button type="button" class="btn see-plan" id="seePlan">See plan <span class="arrow">→</span></button>
+          </div>
+        </div>
+      </section>
+
+      <div class="form-footer">
+        <button type="button" class="link" id="resetAll">⟲ Clear &amp; start over</button>
       </div>
-    </div>
-  </header>
+    </form>
 
-  <main class="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[640px_1fr] gap-4 p-4">
-    <section class="flex flex-col gap-3">
-      <nav class="grid grid-cols-2 sm:grid-cols-5 gap-2">
-        <button class="step current" data-step="1">1. Purpose</button>
-        <button class="step" data-step="2">2. Size</button>
-        <button class="step" data-step="3">3. Fabric</button>
-        <button class="step" data-step="4">4. Cost</button>
-        <button class="step" data-step="5">5. Plan</button>
-      </nav>
+    <!-- Plan view -->
+    <section id="planView" class="plan" hidden aria-live="polite">
+      <a href="#" class="back-link" id="backToEdit">← Queen bed quilt</a>
 
-      <form id="plannerForm" class="flex flex-col gap-3" novalidate>
-        <!-- Step 1 -->
-        <fieldset class="card step-panel current" data-step-panel="1">
-          <legend>Purpose</legend>
-          <div class="grid gap-3">
-            <div class="flex gap-2">
-              <label class="chip">
-                <input type="radio" name="purpose" value="bed_cover" id="purpose_bed">
-                <span>Bed cover</span>
-              </label>
-              <label class="chip">
-                <input type="radio" name="purpose" value="throw_blanket" id="purpose_throw">
-                <span>Throw blanket</span>
-              </label>
-            </div>
-
-            <div id="bedGroup" class="grid gap-2 hidden">
-              <div class="flex flex-wrap gap-2">
-                <label class="chip"><input type="radio" name="bedSize" value="crib"><span>Crib</span></label>
-                <label class="chip"><input type="radio" name="bedSize" value="twin"><span>Twin</span></label>
-                <label class="chip"><input type="radio" name="bedSize" value="full"><span>Full</span></label>
-                <label class="chip"><input type="radio" name="bedSize" value="queen"><span>Queen</span></label>
-                <label class="chip"><input type="radio" name="bedSize" value="king"><span>King</span></label>
-              </div>
-              <div class="grid grid-cols-3 gap-2">
-                <label class="control"><span>Sides overhang (in)</span><input id="sidesOverhang" type="number" min="0" step="1"></label>
-                <label class="control"><span>Foot (in)</span><input id="footOverhang" type="number" min="0" step="1"></label>
-                <label class="control"><span>Head (in)</span><input id="headOverhang" type="number" min="0" step="1"></label>
-              </div>
-            </div>
-
-            <div id="throwGroup" class="grid gap-2 hidden">
-              <div class="flex flex-wrap gap-2">
-                <label class="chip"><input type="radio" name="throwSize" value="small"><span>Small (50×40)</span></label>
-                <label class="chip"><input type="radio" name="throwSize" value="standard"><span>Standard (60×50)</span></label>
-                <label class="chip"><input type="radio" name="throwSize" value="large"><span>Large (70×60)</span></label>
-                <label class="chip"><input type="radio" name="throwSize" value="oversized"><span>Oversized (80×70)</span></label>
-                <label class="chip"><input type="radio" name="throwSize" value="custom"><span>Custom</span></label>
-              </div>
-              <div id="customThrow" class="grid grid-cols-2 gap-2 hidden">
-                <label class="control"><span>Width (in)</span><input id="customThrowWidth" type="number" min="10" step="1"></label>
-                <label class="control"><span>Height (in)</span><input id="customThrowHeight" type="number" min="10" step="1"></label>
-              </div>
+      <div class="grid plan-grid">
+        <article class="card">
+          <h3>Dimensions</h3>
+          <div class="dims">
+            <canvas id="gridCanvas" width="240" height="240" aria-label="Quilt grid preview"></canvas>
+            <div class="dims-meta">
+              <div><span id="qHeight">0</span>” height<br><span id="qRows">0</span> blocks down</div>
+              <div><span id="qWidth">0</span>” width<br><span id="qCols">0</span> blocks across</div>
             </div>
           </div>
-          <div class="actions"><button class="btn next" data-next="2" type="button">Next</button></div>
-        </fieldset>
+        </article>
 
-        <!-- Step 2 -->
-        <fieldset class="card step-panel" data-step-panel="2">
-          <legend>Size</legend>
-          <div class="grid gap-3">
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <label class="control"><span>Blocks across</span><input id="blocksWide" type="number" min="1" step="1"></label>
-              <label class="control"><span>Blocks down</span><input id="blocksHigh" type="number" min="1" step="1"></label>
-              <label class="control"><span>Block width (in)</span><input id="blockWidth" type="number" min="1" step="0.25"></label>
-              <label class="control"><span>Block height (in)</span><input id="blockHeight" type="number" min="1" step="0.25"></label>
-            </div>
-            <div class="grid grid-cols-3 gap-2">
-              <label class="control"><span>Sashing (in)</span><input id="sashing" type="number" min="0" step="0.25"></label>
-              <label class="control"><span>Border (in)</span><input id="border" type="number" min="0" step="0.5"></label>
-              <label class="control">
-                <span>Seam allowance</span>
-                <select id="seam">
-                  <option value="0.25">1/4 in</option>
-                  <option value="0.375">3/8 in</option>
-                  <option value="0.5">1/2 in</option>
-                  <option value="custom">Custom</option>
-                </select>
-              </label>
-              <label id="seamCustomWrap" class="control hidden"><span>Custom seam (in)</span><input id="seamCustom" type="number" min="0.125" step="0.0625"></label>
-            </div>
+        <article class="card">
+          <h3>Estimated cost</h3>
+          <div class="keyvals">
+            <div><div class="muted small">Total</div><div id="costTotal">$0</div></div>
+            <div><div class="muted small">Fabric</div><div id="costFabric">$0</div></div>
+            <div><div class="muted small">Batting</div><div id="costBatting">$0</div></div>
           </div>
-          <div class="actions">
-            <button class="btn secondary prev" data-prev="1" type="button">Back</button>
-            <button class="btn next" data-next="3" type="button">Next</button>
-          </div>
-        </fieldset>
+        </article>
 
-        <!-- Step 3 -->
-        <fieldset class="card step-panel" data-step-panel="3">
-          <legend>Fabric</legend>
-          <div class="grid gap-3">
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
-              <label class="control"><span>Block WOF (in)</span><input id="wof_block" type="number" min="36" step="1"></label>
-              <label class="control"><span>Sashing WOF (in)</span><input id="wof_sashing" type="number" min="36" step="1"></label>
-              <label class="control"><span>Border WOF (in)</span><input id="wof_border" type="number" min="36" step="1"></label>
-              <label class="control"><span>Binding WOF (in)</span><input id="wof_binding" type="number" min="36" step="1"></label>
-              <label class="control"><span>Backing WOF (in)</span><input id="wof_backing" type="number" min="36" step="1"></label>
-            </div>
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
-              <label class="control"><span>$/yd (blocks)</span><input id="price_blocks" type="number" min="0" step="0.01"></label>
-              <label class="control"><span>$/yd (sashing)</span><input id="price_sashing" type="number" min="0" step="0.01"></label>
-              <label class="control"><span>$/yd (border)</span><input id="price_border" type="number" min="0" step="0.01"></label>
-              <label class="control"><span>$/yd (binding)</span><input id="price_binding" type="number" min="0" step="0.01"></label>
-              <label class="control"><span>$/yd (backing)</span><input id="price_backing" type="number" min="0" step="0.01"></label>
-            </div>
-            <div class="grid grid-cols-3 gap-2">
-              <label class="control"><span>Binding strip (in)</span><input id="binding_strip" type="number" min="2" step="0.25"></label>
-              <label class="control"><span>Batting width (in)</span><input id="batting_width" type="number" min="45" step="1"></label>
-              <label class="control"><span>Batting price ($)</span><input id="batting_price" type="number" min="0" step="0.01"></label>
-            </div>
-            <div class="table" id="fabricTable"></div>
-          </div>
-          <div class="actions">
-            <button class="btn secondary prev" data-prev="2" type="button">Back</button>
-            <button class="btn next" data-next="4" type="button">Next</button>
-          </div>
-        </fieldset>
+        <article class="card">
+          <h3>Blocks</h3>
+          <p><strong>Fabric needed</strong><br><span id="blocksYard">—</span><br><span id="blocksCut">—</span></p>
+          <p><strong>Blocks needed</strong><br><span id="blocksNeeded">—</span><br><span id="blocksCutSize">—</span></p>
+        </article>
 
-        <!-- Step 4 -->
-        <fieldset class="card step-panel" data-step-panel="4">
-          <legend>Cost</legend>
-          <div id="costOut" class="text-sm text-slate-700"></div>
-          <div class="actions">
-            <button class="btn secondary prev" data-prev="3" type="button">Back</button>
-            <button class="btn next" data-next="5" type="button">Next</button>
-          </div>
-        </fieldset>
+        <article class="card">
+          <h3>Sashing</h3>
+          <div id="sashingPanel"></div>
+        </article>
 
-        <!-- Step 5 -->
-        <fieldset class="card step-panel" data-step-panel="5">
-          <legend>Plan</legend>
-          <div class="flex gap-2 mb-2">
-            <button id="copyBtn" class="btn">Copy plan</button>
-            <button id="downloadBtn" class="btn-secondary">Download JSON</button>
-          </div>
-          <pre id="planOut" class="plan"></pre>
-          <div class="actions">
-            <button class="btn secondary prev" data-prev="4" type="button">Back</button>
-          </div>
-        </fieldset>
-      </form>
+        <article class="card">
+          <h3>Border</h3>
+          <div id="borderPanel"></div>
+        </article>
+
+        <article class="card">
+          <h3>Backing</h3>
+          <div id="backingPanel"></div>
+        </article>
+
+        <article class="card">
+          <h3>Batting</h3>
+          <div id="battingPanel"></div>
+        </article>
+
+        <article class="card">
+          <h3>Binding</h3>
+          <div id="bindingPanel"></div>
+        </article>
+
+        <div class="form-footer between">
+          <button type="button" class="link" id="resetAll2">⟲ Clear &amp; start over</button>
+          <a class="link" href="https://forms.gle/" target="_blank" rel="noopener">Give feedback ↗</a>
+        </div>
+      </div>
     </section>
-
-    <aside class="preview card">
-      <canvas id="previewCanvas" width="700" height="700" aria-label="Quilt preview" class="rounded-md border border-slate-200"></canvas>
-      <div id="dimOut" class="text-sm text-slate-600"></div>
-    </aside>
   </main>
 
-  <footer class="w-full border-t border-slate-200">
-    <div class="mx-auto max-w-6xl px-4 py-6 text-center text-sm text-slate-600">
-      Built as a static site — ideal for GitHub Pages.
-    </div>
+  <footer class="app-footer">
+    <p>Designed by <a href="#" rel="author">Emily Gilles</a>. Built for GitHub Pages.</p>
   </footer>
 
   <script src="app.js"></script>

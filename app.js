@@ -1,401 +1,298 @@
-// State and helpers
-const $ = (s, r=document) => r.querySelector(s);
-const $$ = (s, r=document) => [...r.querySelectorAll(s)];
-const storeKey='quiltPlanner:pro:v1';
+/* Quilt planner app (vanilla JS) */
+const $ = (sel, ctx=document) => ctx.querySelector(sel);
+const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
 
-const bedDims = {
-  crib:{width:28,height:52},
-  twin:{width:38,height:75},
-  full:{width:54,height:75},
-  queen:{width:60,height:80},
-  king:{width:76,height:80},
-};
-const throwDims = {
-  small:{width:50,height:40},
-  standard:{width:60,height:50},
-  large:{width:70,height:60},
-  oversized:{width:80,height:70}
-};
-
-const defaultState = {
-  purpose:null, bedSize:null, throwSize:null,
-  customThrowWidth:60, customThrowHeight:50,
-  sidesOverhang:10, footOverhang:10, headOverhang:0,
-  blocksWide:6, blocksHigh:8,
-  blockWidth:10, blockHeight:10,
-  sashing:0, border:0,
-  seamChoice:"0.25", seamCustom:0.25,
-  wof_block:42, wof_sashing:42, wof_border:42, wof_binding:42, wof_backing:42,
-  price_blocks:12, price_sashing:12, price_border:12, price_binding:12, price_backing:12,
-  binding_strip:2.5, batting_width:96, batting_price:35
+// --- State --- //
+const state = {
+  purpose: "bed",
+  bedSize: "full",
+  overhang: { sides: 10, foot: 10, head: 0 },
+  blockSize: 9, // finished inches
+  sashing: 1,   // finished inches
+  cornerstones: false,
+  border: 1,    // finished inches each side
+  seam: .25,    // inches
+  wof: { blocks: 44, sashing: 44, corner: 44, border: 44, binding: 44, backing: 44 },
+  costs: { blocks:10, sashing:10, corner:10, border:10, binding:10, backing:10 },
+  bindingCut: 2.25,
 };
 
-const state = JSON.parse(localStorage.getItem(storeKey) || "null") || structuredClone(defaultState);
+// Mattress sizes (typical US) in inches
+const mattresses = {
+  crib:  { w: 28,  h: 52 },
+  twin:  { w: 38,  h: 75 },
+  full:  { w: 54,  h: 75 },
+  queen: { w: 60,  h: 80 },
+  king:  { w: 76,  h: 80 },
+};
 
-function save(){ localStorage.setItem(storeKey, JSON.stringify(state)); }
-function stepTo(n){
-  $$('.step').forEach(b=>b.classList.toggle('current', b.dataset.step==n));
-  $$('.step-panel').forEach(p=>p.classList.toggle('current', p.dataset.stepPanel==n));
+// Helpers
+function updateStateFromForm(){
+  state.purpose = $('input[name="purpose"]:checked').value;
+  state.bedSize = $('input[name="bedSize"]:checked').value;
+  state.overhang.sides = +$('#overhangSides').value || 0;
+  state.overhang.foot = +$('#overhangFoot').value || 0;
+  state.overhang.head = +$('#overhangHead').value || 0;
+  state.blockSize = +$('input[name="blockSize"]:checked').value;
+  state.sashing = +$('input[name="sashing"]:checked').value;
+  state.cornerstones = $('#cornerstones').checked;
+  state.border = +$('input[name="border"]:checked').value;
+  state.seam = +$('input[name="seam"]:checked').value;
+  state.bindingCut = +$('input[name="bindingCut"]:checked').value;
+
+  state.wof.blocks = +$('#wofBlocks').value;
+  state.wof.sashing = +$('#wofSashing').value;
+  state.wof.corner = +$('#wofCorner').value;
+  state.wof.border = +$('#wofBorder').value;
+  state.wof.binding = +$('#wofBinding').value;
+  state.wof.backing = +$('#wofBacking').value;
+
+  state.costs.blocks = +$('#costBlocks').value;
+  state.costs.sashing = +$('#costSashing').value;
+  state.costs.corner = +$('#costCorner').value;
+  state.costs.border = +$('#costBorder').value;
+  state.costs.binding = +$('#costBinding').value;
+  state.costs.backing = +$('#costBacking').value;
 }
 
-function bind(){
-  // Purpose radios
-  $$('#purpose_bed, #purpose_throw').forEach(r=>{
-    r.addEventListener('change', () => {
-      state.purpose = r.value;
-      $('#bedGroup').classList.toggle('hidden', state.purpose!=='bed_cover');
-      $('#throwGroup').classList.toggle('hidden', state.purpose!=='throw_blanket');
-      onChange();
-    });
-  });
-
-  // Bed sizes
-  $$('input[name="bedSize"]').forEach(r=>{
-    r.addEventListener('change', ()=>{ state.bedSize=r.value; onChange(); });
-  });
-
-  // Throw sizes
-  $$('input[name="throwSize"]').forEach(r=>{
-    r.addEventListener('change', ()=>{
-      state.throwSize=r.value;
-      $('#customThrow').classList.toggle('hidden', state.throwSize!=='custom');
-      onChange();
-    });
-  });
-
-  // Numeric inputs & selects
-  ['customThrowWidth','customThrowHeight','sidesOverhang','footOverhang','headOverhang',
-   'blocksWide','blocksHigh','blockWidth','blockHeight','sashing','border',
-   'wof_block','wof_sashing','wof_border','wof_binding','wof_backing',
-   'price_blocks','price_sashing','price_border','price_binding','price_backing',
-   'binding_strip','batting_width','batting_price'].forEach(id=>{
-    const el = $('#'+id); if(!el) return;
-    el.value = state[id];
-    el.addEventListener('input', ()=>{ state[id]=+el.value; onChange(); });
-  });
-
-  // Seam selection
-  const seamSel = $('#seam'), seamCustomWrap = $('#seamCustomWrap'), seamCustom = $('#seamCustom');
-  seamSel.value = state.seamChoice;
-  seamCustom.value = state.seamCustom;
-  seamCustomWrap.classList.toggle('hidden', state.seamChoice!=='custom');
-  seamSel.addEventListener('change', ()=>{
-    state.seamChoice = seamSel.value;
-    seamCustomWrap.classList.toggle('hidden', state.seamChoice!=='custom');
-    onChange();
-  });
-  seamCustom.addEventListener('input', ()=>{ state.seamCustom = +seamCustom.value; onChange(); });
-
-  // Steps
-  $$('.next').forEach(b=>b.addEventListener('click', ()=> stepTo(b.dataset.next)));
-  $$('.prev').forEach(b=>b.addEventListener('click', ()=> stepTo(b.dataset.prev)));
-  $$('.step').forEach(b=>b.addEventListener('click', ()=> stepTo(b.dataset.step)));
-
-  // Buttons
-  $('#resetBtn').addEventListener('click', ()=>{
-    Object.assign(state, structuredClone(defaultState));
-    initValues();
-    onChange();
-    stepTo(1);
-  });
-  $('#copyBtn').addEventListener('click', (e)=>{
-    e.preventDefault();
-    navigator.clipboard.writeText($('#planOut').textContent).then(()=>{
-      $('#copyBtn').textContent='Copied'; setTimeout(()=>$('#copyBtn').textContent='Copy plan',1200);
-    });
-  });
-  $('#downloadBtn').addEventListener('click', (e)=>{
-    e.preventDefault();
-    const data = new Blob([ JSON.stringify(state, null, 2) ], { type: 'application/json' });
-    const url = URL.createObjectURL(data);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'quilt-plan.json';
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-  });
+function setSummary(){
+  $('#sizeSummary').textContent = `${titleCase(state.bedSize)} · ${state.overhang.head}–${state.overhang.foot}” overhang`;
+  $('#designSummary').textContent = `${state.blockSize}” × ${state.blockSize}” blocks · ${state.sashing}” sashing${state.cornerstones?' with cornerstones':''} · ${state.border?state.border+'” border':'No border'}`;
 }
 
-function initValues(){
-  // purpose group visibility
-  $('#purpose_bed').checked = state.purpose==='bed_cover';
-  $('#purpose_throw').checked = state.purpose==='throw_blanket';
-  $('#bedGroup').classList.toggle('hidden', state.purpose!=='bed_cover');
-  $('#throwGroup').classList.toggle('hidden', state.purpose!=='throw_blanket');
+function titleCase(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
 
-  if(state.bedSize) {
-    const el = document.querySelector(`input[name="bedSize"][value="${state.bedSize}"]`);
-    if(el) el.checked = true;
+// Expand/collapse steps
+$$('.edit-link').forEach(btn=>{
+  btn.addEventListener('click', e=>{
+    const step = e.currentTarget.dataset.edit;
+    toggleStep(step);
+  });
+});
+function toggleStep(step){
+  $$('.step').forEach(sec=>{
+    if(sec.dataset.step === step){
+      const isCollapsed = sec.classList.contains('collapsed');
+      sec.classList.toggle('collapsed', !isCollapsed);
+      sec.querySelector('.edit-link').setAttribute('aria-expanded', String(isCollapsed));
+    }else{
+      sec.classList.add('collapsed');
+      sec.querySelector('.edit-link').setAttribute('aria-expanded', 'false');
+    }
+  });
+  window.scrollTo({top: $('.step[data-step="'+step+'"]').offsetTop-10, behavior:'smooth'});
+}
+
+// Next/back
+$$('.btn.next').forEach(btn=>{
+  btn.addEventListener('click', e=>{
+    updateStateFromForm();
+    setSummary();
+    const next = e.currentTarget.dataset.next;
+    toggleStep(next);
+  });
+});
+$$('[data-back]').forEach(btn=>{
+  btn.addEventListener('click', e=>{
+    const back = e.currentTarget.dataset.back;
+    toggleStep(back);
+  });
+});
+
+// Reset
+function resetAll(){
+  window.location.reload();
+}
+$('#resetAll').addEventListener('click', resetAll);
+$('#resetAll2').addEventListener('click', resetAll);
+
+// See plan
+$('#seePlan').addEventListener('click', ()=>{
+  updateStateFromForm();
+  setSummary();
+  computeAndRenderPlan();
+  $('#plannerForm').hidden = true;
+  $('#planView').hidden = false;
+  $('#backToForm').hidden = false;
+  $('#backToEdit').focus();
+});
+$('#backToEdit, #backToForm').forEach ? null : null; // defensive
+
+$('#backToEdit').addEventListener('click', e=>{
+  e.preventDefault();
+  $('#planView').hidden = true;
+  $('#plannerForm').hidden = false;
+  toggleStep('1');
+  $('#backToForm').hidden = true;
+});
+
+// --- Calculations --- //
+
+// Given target width/height, choose block grid (cols/rows) that best fits using block + sashing + border
+function chooseGrid(targetW, targetH, block, sashing, border){
+  let best = {cols:1, rows:1, w:0, h:0, diff:Infinity};
+  for(let cols=3; cols<=12; cols++){
+    for(let rows=3; rows<=14; rows++){
+      const w = cols*block + (cols-1)*sashing + 2*border;
+      const h = rows*block + (rows-1)*sashing + 2*border;
+      const diff = Math.abs(w-targetW) + Math.abs(h-targetH);
+      if(diff < best.diff) best = {cols, rows, w, h, diff};
+    }
   }
-  if(state.throwSize){
-    const el = document.querySelector(`input[name="throwSize"][value="${state.throwSize}"]`);
-    if(el) el.checked = true;
-    $('#customThrow').classList.toggle('hidden', state.throwSize!=='custom');
+  return best;
+}
+
+function computeAndRenderPlan(){
+  const m = mattresses[state.bedSize];
+  const targetW = m.w + 2*state.overhang.sides;
+  const targetH = m.h + state.overhang.foot + state.overhang.head;
+
+  const grid = chooseGrid(targetW, targetH, state.blockSize, state.sashing, state.border);
+  const cols = grid.cols, rows = grid.rows;
+
+  // Record basic metrics
+  const finishedW = round1(grid.w);
+  const finishedH = round1(grid.h);
+
+  // Draw grid preview
+  drawGrid(cols, rows);
+
+  // Blocks
+  const cutBlock = state.blockSize + 2*state.seam;
+  const blocksCount = cols * rows;
+
+  // Yardage (area-based estimate)
+  function yardsFromPieces(widthIn, heightIn, count, wof){
+    const area = widthIn*heightIn*count; // square inches
+    return area / (wof * 36); // yards
   }
-}
 
-function seamAllowance(){
-  return state.seamChoice==='custom' ? (state.seamCustom||0.25) : +state.seamChoice;
-}
+  const blockYards = yardsFromPieces(cutBlock, cutBlock, blocksCount, state.wof.blocks);
+  const sashingPiecesCols = (cols-1) * rows; // vertical sashing pieces
+  const sashingPiecesRows = (rows-1) * cols; // horizontal sashing pieces
+  const sashingCutW = state.sashing + 2*state.seam;
+  const sashingYards = yardsFromPieces(sashingCutW, state.blockSize, sashingPiecesCols, state.wof.sashing)
+                      + yardsFromPieces(sashingCutW, state.blockSize, sashingPiecesRows, state.wof.sashing);
 
-function baseDimensions(){
-  if(state.purpose==='bed_cover' && state.bedSize){
-    const m = bedDims[state.bedSize];
-    return {
-      width: m.width + 2*(state.sidesOverhang||0),
-      height: m.height + (state.footOverhang||0) + (state.headOverhang||0)
-    };
+  const cornerCount = state.cornerstones ? (cols-1)*(rows-1) : 0;
+  const cornerCut = state.sashing + 2*state.seam;
+  const cornerYards = state.cornerstones ? yardsFromPieces(cornerCut, cornerCut, cornerCount, state.wof.corner) : 0;
+
+  const borderCutW = state.border ? (state.border + 2*state.seam) : 0;
+  const borderPieces = state.border ? 2*(cols*state.blockSize + (cols-1)*state.sashing) + 2*(rows*state.blockSize + (rows-1)*state.sashing) : 0; // perimeter for info
+  const borderYards = state.border ? ( (borderCutW * (finishedW + finishedH) * 2) / (state.wof.border * 36) ) : 0; // approx
+
+  // Backing (1- or 2- or 3-panel, simple calc)
+  const backingW = finishedW + 8; // extra for quilting
+  const backingH = finishedH + 8;
+  const backingPanels = Math.ceil(backingW / state.wof.backing);
+  const panelLength = backingH;
+  const backingYards = (backingPanels * panelLength) / 36;
+
+  // Binding (perimeter, add 10” for joins)
+  const perimeter = 2*(finishedW + finishedH);
+  const bindingStripWidth = state.bindingCut;
+  const stripsNeeded = Math.ceil( (perimeter + 10) / state.wof.binding );
+  const bindingYards = (stripsNeeded * bindingStripWidth) / 36;
+
+  // Batting suggestion based on typical packaged sizes
+  const battingSize = suggestBattingSize(finishedW, finishedH);
+
+  // Costs
+  const fabricCosts = (blockYards*state.costs.blocks) + (sashingYards*state.costs.sashing) + (cornerYards*state.costs.corner) + (borderYards*state.costs.border) + (bindingYards*state.costs.binding) + (backingYards*state.costs.backing);
+  const battingCost = 30; // placeholder typical
+  const totalCost = fabricCosts + battingCost;
+
+  // Render
+  $('#qWidth').textContent = finishedW;
+  $('#qHeight').textContent = finishedH;
+  $('#qCols').textContent = cols;
+  $('#qRows').textContent = rows;
+
+  $('#blocksYard').textContent = `${round2(blockYards)} yards`;
+  $('#blocksCut').textContent = `Cut ${Math.ceil(blockYards*state.wof.blocks*36 / cutBlock)} ${cutBlock.toFixed(1)}” strips from WOF`;
+  $('#blocksNeeded').textContent = `${blocksCount} blocks`;
+  $('#blocksCutSize').textContent = `Cut to ${cutBlock.toFixed(1)}” × ${cutBlock.toFixed(1)}”`;
+
+  const sPanel = [];
+  sPanel.push(`<p><strong>Sashing fabric needed</strong><br>${round2(sashingYards)} yards<br>Cut ${Math.ceil(sashingYards*state.wof.sashing*36 / sashingCutW)} ${sashingCutW.toFixed(1)}” strips from WOF</p>`);
+  if(state.cornerstones){
+    sPanel.push(`<p><strong>Cornerstone fabric needed</strong><br>${round2(cornerYards)} yards<br>Cut ${Math.ceil(Math.sqrt(cornerCount))} ${cornerCut.toFixed(1)}” strips from WOF</p>`);
   }
-  if(state.purpose==='throw_blanket'){
-    if(state.throwSize==='custom') return { width: state.customThrowWidth||60, height: state.customThrowHeight||50 };
-    if(state.throwSize) return throwDims[state.throwSize];
+  sPanel.push(`<p><strong>Sashing rows needed</strong><br>${rows-1} rows<br>Cut to ${state.sashing.toFixed(1)}” × ${ (cols*state.blockSize + (cols-1)*state.sashing).toFixed(1) }”</p>`);
+  sPanel.push(`<p><strong>Sashing columns needed</strong><br>${cols-1} columns<br>Cut to ${state.sashing.toFixed(1)}” × ${ (rows*state.blockSize + (rows-1)*state.sashing).toFixed(1) }”</p>`);
+  if(state.cornerstones){
+    sPanel.push(`<p><strong>Cornerstones needed</strong><br>${cornerCount} cornerstones<br>Cut to ${state.sashing.toFixed(1)}” × ${state.sashing.toFixed(1)}”</p>`);
   }
-  return { width:0, height:0 };
-}
+  sPanel.push(`<p><strong>Sewing order</strong><br>1. Sashing columns → blocks<br>2. Assemble rows of blocks<br>3. Sashing rows → ${state.cornerstones?'cornerstones':'quilt'}<br>4. Assemble quilt</p>`);
+  $('#sashingPanel').innerHTML = sPanel.join("");
 
-function logicalLayout(){
-  // Given base dimensions and block size + sashing, determine blocksWide/High if not set.
-  const { width, height } = baseDimensions();
-  const bw = state.blockWidth || 6, bh = state.blockHeight || 6;
-  const s = state.sashing || 0;
-  // Use the provided blocksWide/High; this is a preview calc only
-  return { width, height, blocksWide: state.blocksWide, blocksHigh: state.blocksHigh, blockW: bw, blockH: bh, sashing: s, border: state.border||0 };
-}
-
-function topSize(){
-  const { blocksWide, blocksHigh, blockW, blockH, sashing, border } = logicalLayout();
-  const blocksW = blocksWide * blockW;
-  const blocksH = blocksHigh * blockH;
-  const sashW = sashing>0 ? (blocksWide-1)*sashing : 0;
-  const sashH = sashing>0 ? (blocksHigh-1)*sashing : 0;
-  const borderW = border>0 ? 2*border : 0;
-  const borderH = border>0 ? 2*border : 0;
-  return { topW: blocksW + sashW + borderW, topH: blocksH + sashH + borderH };
-}
-
-// --- Yardage calcs ---
-function ceilToEighthYards(y){ return Math.ceil(y*8)/8; }
-function yards(nInches){ return nInches/36; }
-
-function calcBlocks(){
-  const sa = seamAllowance();
-  const { blocksWide, blocksHigh, blockW, blockH } = logicalLayout();
-  const totalBlocks = blocksWide * blocksHigh;
-  const cutW = blockW + 2*sa, cutH = blockH + 2*sa;
-  const wof = state.wof_block;
-
-  // how many per strip if we cut along WOF
-  const perStripNormal = Math.floor(wof / cutW);
-  const perStripRot = Math.floor(wof / cutH);
-  let strips, stripCutSize;
-  if (perStripNormal >= perStripRot){
-    strips = Math.ceil(totalBlocks / perStripNormal);
-    stripCutSize = `${cutW.toFixed(2)}" x WOF`;
+  const bPanel = [];
+  if(state.border){
+    bPanel.push(`<p><strong>Fabric needed</strong><br>${round2(borderYards)} yard${borderYards>=2?'s':''}<br>Cut ${Math.max(4, Math.ceil(borderYards*state.wof.border*36 / borderCutW))} ${borderCutW.toFixed(1)}” strips from WOF</p>`);
+    bPanel.push(`<p><strong>Border columns needed</strong><br>2 columns<br>Cut to ${state.border.toFixed(1)}” × ${ (rows*state.blockSize + (rows-1)*state.sashing + 2*state.border).toFixed(1) }"</p>`);
+    bPanel.push(`<p><strong>Border rows needed</strong><br>2 rows<br>Cut to ${state.border.toFixed(1)}” × ${ (cols*state.blockSize + (cols-1)*state.sashing + 2*state.border).toFixed(1) }"</p>`);
+    bPanel.push(`<p><strong>Sewing order</strong><br>1. Border columns → quilt<br>2. Border rows → quilt</p>`);
   } else {
-    strips = Math.ceil(totalBlocks / perStripRot);
-    stripCutSize = `${cutH.toFixed(2)}" x WOF`;
+    bPanel.push(`<p>No border selected.</p>`);
   }
-  const stripLenInches = strips * cutH; // if normal; approx either way
-  const yardsNeeded = ceilToEighthYards(yards(stripLenInches));
-  return { fabricYards: yardsNeeded, strips, stripSize: stripCutSize, blocksToMake: totalBlocks, cutSize: `${cutW.toFixed(2)}" x ${cutH.toFixed(2)}"` };
+  $('#borderPanel').innerHTML = bPanel.join("");
+
+  const bkPanel = [];
+  bkPanel.push(`<p><strong>Fabric needed</strong><br>${round2(backingYards)} yards<br>Cut ${backingPanels} ${Math.round(panelLength)}” panels from WOF</p>`);
+  bkPanel.push(`<p><strong>Backing size</strong><br>${Math.round(backingW)}” × ${Math.round(backingH)}”</p>`);
+  $('#backingPanel').innerHTML = bkPanel.join("");
+
+  $('#battingPanel').innerHTML = `<p><strong>Size needed</strong><br>${battingSize}</p>`;
+
+  const bindPanel = [];
+  bindPanel.push(`<p><strong>Fabric needed</strong><br>${round2(bindingYards)} yard${bindingYards>=2?'s':''}<br>Cut ${stripsNeeded} ${bindingStripWidth.toFixed(2)}” strips from WOF</p>`);
+  bindPanel.push(`<p><strong>Binding size</strong><br>${bindingStripWidth.toFixed(2)}” × ${Math.round(perimeter)}”</p>`);
+  $('#bindingPanel').innerHTML = bindPanel.join("");
+
+  // Costs
+  $('#costFabric').textContent = `$${round2(fabricCosts)}`;
+  $('#costBatting').textContent = `$${round2(battingCost)}`;
+  $('#costTotal').textContent = `$${round2(totalCost)}`;
 }
 
-function calcSashing(){
-  const sa = seamAllowance();
-  const { blocksWide, blocksHigh, blockW, blockH, sashing } = logicalLayout();
-  if(!sashing) return { fabricYards:0, strips:0, rows:0, columns:0, rowSize:'N/A', columnSize:'N/A', stripSize:'N/A' };
-  const wof = state.wof_sashing;
-  const sashCut = sashing + 2*sa;
-
-  // horizontal sashing rows (between block rows)
-  const rows = Math.max(blocksHigh-1, 0);
-  const rowLength = blocksWide*blockW + (blocksWide-1)*sashing; // finished
-  const rowStrips = rows>0 ? Math.ceil((rows * rowLength) / wof) : 0;
-  const rowYards = yards(rowStrips * sashCut);
-
-  // vertical sashing columns (between block cols)
-  const cols = Math.max(blocksWide-1, 0);
-  const colLength = blocksHigh*blockH + (blocksHigh-1)*sashing;
-  const stripsPerWOF = Math.floor(wof / sashCut) || 1;
-  const verticalCuts = Math.ceil(cols / stripsPerWOF);
-  const colYards = yards(verticalCuts * colLength);
-
-  const totalYards = ceilToEighthYards(rowYards + colYards);
-  return { fabricYards: totalYards, strips: rowStrips+verticalCuts, rows, columns: cols, rowSize: `${sashCut.toFixed(2)}" x ${Math.ceil(rowLength)}"`, columnSize: `${sashCut.toFixed(2)}" x ${Math.ceil(colLength)}"`, stripSize: `${sashCut.toFixed(2)}" x WOF` };
+function drawGrid(cols, rows){
+  const c = $('#gridCanvas');
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.clearRect(0,0,w,h);
+  const cell = Math.min((w-20)/cols, (h-20)/rows);
+  const ox = (w - cols*cell)/2;
+  const oy = (h - rows*cell)/2;
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent');
+  for(let r=0; r<rows; r++){
+    for(let cidx=0; cidx<cols; cidx++){
+      ctx.globalAlpha = 0.9;
+      ctx.fillRect(ox + cidx*cell, oy + r*cell, cell-2, cell-2);
+    }
+  }
 }
 
-function calcBorders(){
-  const sa = seamAllowance();
-  const { blockW, blockH, blocksWide, blocksHigh, sashing, border } = logicalLayout();
-  if(!border) return { fabricYards:0, strips:0, rows:0, columns:0, stripSize:'N/A' };
-  const wof = state.wof_border;
-  const borderCut = border + 2*sa;
-  const innerW = blocksWide*blockW + (blocksWide-1)*sashing;
-  const innerH = blocksHigh*blockH + (blocksHigh-1)*sashing;
-  const horizLen = innerW + 2*border; // attach to sides
-  const vertLen  = innerH + 2*border;
-
-  const stripsPerWOF = Math.floor(wof / borderCut) || 1;
-  const neededStrips = 2*Math.ceil(horizLen/wof) + 2*Math.ceil(vertLen/wof);
-  const yardsNeeded = ceilToEighthYards(yards(neededStrips * borderCut));
-  return { fabricYards: yardsNeeded, strips: neededStrips, rows:2, columns:2, stripSize:`${borderCut.toFixed(2)}" x WOF` };
-}
-
-function calcBacking(){
-  const { topW, topH } = topSize();
-  const wof = state.wof_backing;
-  // add 3" all around
-  const needW = topW + 6, needH = topH + 6;
-  const panels = Math.ceil(needW / wof);
-  const panelLen = needH;
-  const yardsNeeded = ceilToEighthYards(yards(panels * panelLen));
-  return { fabricYards: yardsNeeded, panels, panelSize: `${Math.min(wof, needW).toFixed(0)}" x ${Math.ceil(panelLen)}"`, cutSize: `${Math.ceil(needW)}" x ${Math.ceil(needH)}"` };
-}
-
-function calcBinding(){
-  const stripW = state.binding_strip || 2.5;
-  const { topW, topH } = topSize();
-  const perim = 2*(topW + topH);
-  const wof = state.wof_binding;
-  const strips = Math.ceil(perim / wof);
-  const yardsNeeded = ceilToEighthYards(yards(strips * stripW));
-  return { fabricYards: yardsNeeded, strips, stripSize: `${stripW.toFixed(2)}" x WOF`, cutSize: `${stripW.toFixed(2)}" x ${Math.ceil(perim/strips)}"` };
-}
-
-function calcBatting(){
-  const { topW, topH } = topSize();
-  const needW = topW + 8, needH = topH + 8; // generous extra
-  const bw = state.batting_width;
-  const panels = Math.ceil(needW / bw);
-  const length = needH;
-  const sizeNeeded = `${Math.ceil(needW)}" x ${Math.ceil(needH)}"`;
-  return { sizeNeeded, panels, length };
-}
-
-function estimate(){
-  const blocks = calcBlocks();
-  const sashing = calcSashing();
-  const borders = calcBorders();
-  const backing = calcBacking();
-  const binding = calcBinding();
-  const batting = calcBatting();
-  const totalCost = (blocks.fabricYards*state.price_blocks)
-    + (sashing.fabricYards*state.price_sashing)
-    + (borders.fabricYards*state.price_border)
-    + (backing.fabricYards*state.price_backing)
-    + (binding.fabricYards*state.price_binding)
-    + (state.batting_price||0);
-  return { blocks, sashing, borders, backing, binding, batting, totalCost: Math.round(totalCost*100)/100 };
-}
-
-function renderFabricTable(){
-  const e = estimate();
-  const tbl = document.createElement('table');
-  tbl.innerHTML = `
-    <thead><tr><th>Item</th><th>Yardage</th><th>Details</th></tr></thead>
-    <tbody>
-      <tr><td>Blocks</td><td>${e.blocks.fabricYards.toFixed(3)} yd</td><td>${e.blocks.blocksToMake} blocks • ${e.blocks.stripSize}</td></tr>
-      <tr><td>Sashing</td><td>${e.sashing.fabricYards.toFixed(3)} yd</td><td>${e.sashing.rows} rows, ${e.sashing.columns} cols • ${e.sashing.stripSize}</td></tr>
-      <tr><td>Borders</td><td>${e.borders.fabricYards.toFixed(3)} yd</td><td>${e.borders.stripSize}</td></tr>
-      <tr><td>Backing</td><td>${e.backing.fabricYards.toFixed(3)} yd</td><td>${e.backing.panels} panels • ${e.backing.panelSize}</td></tr>
-      <tr><td>Binding</td><td>${e.binding.fabricYards.toFixed(3)} yd</td><td>${e.binding.strips} strips • ${e.binding.stripSize}</td></tr>
-      <tr><td>Batting</td><td>—</td><td>${e.batting.sizeNeeded}</td></tr>
-    </tbody>`;
-  $('#fabricTable').innerHTML = '';
-  $('#fabricTable').appendChild(tbl);
-
-  $('#costOut').innerHTML = `
-    <div class="grid sm:grid-cols-2 gap-2">
-      <div>Blocks: $${(e.blocks.fabricYards*state.price_blocks).toFixed(2)}</div>
-      <div>Sashing: $${(e.sashing.fabricYards*state.price_sashing).toFixed(2)}</div>
-      <div>Borders: $${(e.borders.fabricYards*state.price_border).toFixed(2)}</div>
-      <div>Backing: $${(e.backing.fabricYards*state.price_backing).toFixed(2)}</div>
-      <div>Binding: $${(e.binding.fabricYards*state.price_binding).toFixed(2)}</div>
-      <div>Batting: $${(state.batting_price||0).toFixed(2)}</div>
-      <div class="font-semibold text-slate-900">Total: $${e.totalCost.toFixed(2)}</div>
-    </div>`;
-}
-
-function renderPlan(){
-  const { topW, topH } = topSize();
-  const e = estimate();
-  const base = baseDimensions();
-  const lines = [
-    `Purpose: ${state.purpose || '—'}`,
-    `Base size: ${base.width}" × ${base.height}"`,
-    '',
-    `Blocks: ${state.blocksWide} × ${state.blocksHigh}`,
-    `Block size: ${state.blockWidth}" × ${state.blockHeight}"`,
-    `Sashing: ${state.sashing}"`,
-    `Border: ${state.border}"`,
-    '',
-    `Finished top: ${topW.toFixed(1)}" W × ${topH.toFixed(1)}" H`,
-    '',
-    `Yardage:`,
-    `  • Blocks: ${e.blocks.fabricYards.toFixed(3)} yd (${e.blocks.stripSize})`,
-    `  • Sashing: ${e.sashing.fabricYards.toFixed(3)} yd (${e.sashing.stripSize})`,
-    `  • Borders: ${e.borders.fabricYards.toFixed(3)} yd (${e.borders.stripSize})`,
-    `  • Backing: ${e.backing.fabricYards.toFixed(3)} yd (${e.backing.panels} panels @ ${e.backing.panelSize})`,
-    `  • Binding: ${e.binding.fabricYards.toFixed(3)} yd (${e.binding.strips} strips @ ${e.binding.stripSize})`,
-    `  • Batting: ${e.batting.sizeNeeded}`,
-    '',
-    `Estimated total cost: $${e.totalCost.toFixed(2)}`
+function suggestBattingSize(w, h){
+  // simple mapping to pre-cuts
+  const sizes = [
+    {name:'Crib', w:45, h:60},
+    {name:'Throw', w:60, h:60},
+    {name:'Twin', w:72, h:90},
+    {name:'Full/double', w:81, h:96},
+    {name:'Queen', w:90, h:108},
+    {name:'King', w:120, h:120},
   ];
-  $('#planOut').textContent = lines.join('\n');
-}
-
-function drawPreview(){
-  const c = $('#previewCanvas'); const ctx = c.getContext('2d');
-  const { blocksWide, blocksHigh, blockW, blockH, sashing, border } = logicalLayout();
-  const { topW, topH } = topSize();
-  const pad=20, scale=Math.min((c.width-2*pad)/topW, (c.height-2*pad)/topH);
-  const ox = (c.width - topW*scale)/2, oy = (c.height - topH*scale)/2;
-
-  ctx.clearRect(0,0,c.width,c.height);
-  ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
-
-  // Border background
-  if(border>0){ ctx.fillStyle='#11182714'; ctx.fillRect(ox, oy, topW*scale, topH*scale); }
-
-  // Draw blocks & sashing (two-color checker)
-  const colorA = '#8B5CF6', colorB = '#E9D5FF';
-  let y = oy + (border>0 ? border*scale : 0);
-  for(let r=0;r<blocksHigh;r++){
-    let x = ox + (border>0 ? border*scale : 0);
-    for(let cidx=0;cidx<blocksWide;cidx++){
-      ctx.fillStyle = ((r+cidx)%2===0) ? colorA : colorB;
-      ctx.fillRect(x, y, blockW*scale, blockH*scale);
-      x += blockW*scale;
-      if(cidx<blocksWide-1 && sashing>0){
-        ctx.fillStyle = '#11182722';
-        ctx.fillRect(x, y, sashing*scale, blockH*scale);
-        x += sashing*scale;
-      }
-    }
-    y += blockH*scale;
-    if(r<blocksHigh-1 && sashing>0){
-      let sx = ox + (border>0 ? border*scale : 0);
-      let sashW = blocksWide*blockW*scale + (blocksWide-1)*sashing*scale;
-      ctx.fillStyle = '#11182722';
-      ctx.fillRect(sx, y, sashW, sashing*scale);
-      y += sashing*scale;
-    }
+  const needW = w+6, needH = h+6;
+  for(const s of sizes){
+    if(needW<=s.w && needH<=s.h) return s.name.toLowerCase();
   }
-
-  $('#dimOut').textContent = `Finished top: ${topW.toFixed(1)}" × ${topH.toFixed(1)}"`;
+  return `${Math.ceil(needW/12)*12}” × ${Math.ceil(needH/12)*12}”`;
 }
 
-function onChange(){
-  save();
-  renderFabricTable();
-  renderPlan();
-  drawPreview();
-}
+function round1(x){ return Math.round(x*10)/10; }
+function round2(x){ return Math.round(x*100)/100; }
 
-function main(){
-  bind();
-  initValues();
-  onChange();
-  stepTo(1);
-}
-
-document.addEventListener('DOMContentLoaded', main);
+// init
+toggleStep('1');
+setSummary();
