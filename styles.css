@@ -5,9 +5,9 @@
   --text: #111827;
   --muted: #6b7280;
   --line: #e5e7eb;
-  --accent: #5a3df5;
-  --accent-600: #4f2ff0;
-  --radius: 14px;
+  --accent: #531FFF;
+  --accent-600: #3d18d6;
+  --radius: 4px;
   --shadow: 0 1px 2px rgba(0,0,0,.05), 0 8px 24px rgba(0,0,0,.06);
 }
 
@@ -106,3 +106,7 @@ label.choice input[type="radio"],label.checkbox input[type="checkbox"]{inline-si
 .mb-16{margin-bottom:16px}
 .mb-20{margin-bottom:20px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Design exactness adjustments */
+.btn, .card, .input-suffix input { border-radius: 4px; }
+.badge { border-radius: 12px; } /* keep pill for the number */
