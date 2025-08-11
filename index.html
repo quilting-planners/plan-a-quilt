@@ -3,158 +3,179 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Quilt Planner</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>Plan a quilt</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
-  <header class="site-header">
-    <h1>Plan a quilt</h1>
-    <button id="resetBtn" class="btn secondary" type="button" title="Reset all fields">Reset</button>
+<body class="min-h-screen bg-white text-slate-900">
+  <header class="w-full border-b border-slate-200">
+    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-3">
+      <h1 class="text-lg font-semibold">Plan a quilt</h1>
+      <div class="flex items-center gap-2">
+        <button id="resetBtn" class="btn-secondary">Reset</button>
+        <a class="btn-outline" href="https://github.com/new" target="_blank" rel="noopener">Upload to GitHub</a>
+      </div>
+    </div>
   </header>
 
-  <main class="container">
-    <section class="planner">
-      <nav class="steps" aria-label="Steps">
+  <main class="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[640px_1fr] gap-4 p-4">
+    <section class="flex flex-col gap-3">
+      <nav class="grid grid-cols-2 sm:grid-cols-5 gap-2">
         <button class="step current" data-step="1">1. Purpose</button>
         <button class="step" data-step="2">2. Size</button>
-        <button class="step" data-step="3">3. Design</button>
-        <button class="step" data-step="4">4. Fabric</button>
+        <button class="step" data-step="3">3. Fabric</button>
+        <button class="step" data-step="4">4. Cost</button>
         <button class="step" data-step="5">5. Plan</button>
       </nav>
 
-      <form id="plannerForm" novalidate>
-        <!-- Step 1: Purpose -->
+      <form id="plannerForm" class="flex flex-col gap-3" novalidate>
+        <!-- Step 1 -->
         <fieldset class="card step-panel current" data-step-panel="1">
           <legend>Purpose</legend>
-          <div class="grid">
-            <label>
-              Quilt name
-              <input id="quiltName" name="quiltName" type="text" placeholder="My Cozy Quilt" />
-            </label>
-            <label>
-              Who is it for?
-              <input id="recipient" name="recipient" type="text" placeholder="Recipient / Occasion" />
-            </label>
+          <div class="grid gap-3">
+            <div class="flex gap-2">
+              <label class="chip">
+                <input type="radio" name="purpose" value="bed_cover" id="purpose_bed">
+                <span>Bed cover</span>
+              </label>
+              <label class="chip">
+                <input type="radio" name="purpose" value="throw_blanket" id="purpose_throw">
+                <span>Throw blanket</span>
+              </label>
+            </div>
+
+            <div id="bedGroup" class="grid gap-2 hidden">
+              <div class="flex flex-wrap gap-2">
+                <label class="chip"><input type="radio" name="bedSize" value="crib"><span>Crib</span></label>
+                <label class="chip"><input type="radio" name="bedSize" value="twin"><span>Twin</span></label>
+                <label class="chip"><input type="radio" name="bedSize" value="full"><span>Full</span></label>
+                <label class="chip"><input type="radio" name="bedSize" value="queen"><span>Queen</span></label>
+                <label class="chip"><input type="radio" name="bedSize" value="king"><span>King</span></label>
+              </div>
+              <div class="grid grid-cols-3 gap-2">
+                <label class="control"><span>Sides overhang (in)</span><input id="sidesOverhang" type="number" min="0" step="1"></label>
+                <label class="control"><span>Foot (in)</span><input id="footOverhang" type="number" min="0" step="1"></label>
+                <label class="control"><span>Head (in)</span><input id="headOverhang" type="number" min="0" step="1"></label>
+              </div>
+            </div>
+
+            <div id="throwGroup" class="grid gap-2 hidden">
+              <div class="flex flex-wrap gap-2">
+                <label class="chip"><input type="radio" name="throwSize" value="small"><span>Small (50×40)</span></label>
+                <label class="chip"><input type="radio" name="throwSize" value="standard"><span>Standard (60×50)</span></label>
+                <label class="chip"><input type="radio" name="throwSize" value="large"><span>Large (70×60)</span></label>
+                <label class="chip"><input type="radio" name="throwSize" value="oversized"><span>Oversized (80×70)</span></label>
+                <label class="chip"><input type="radio" name="throwSize" value="custom"><span>Custom</span></label>
+              </div>
+              <div id="customThrow" class="grid grid-cols-2 gap-2 hidden">
+                <label class="control"><span>Width (in)</span><input id="customThrowWidth" type="number" min="10" step="1"></label>
+                <label class="control"><span>Height (in)</span><input id="customThrowHeight" type="number" min="10" step="1"></label>
+              </div>
+            </div>
           </div>
-          <label class="block">
-            Notes
-            <textarea id="notes" name="notes" rows="3" placeholder="Any special ideas or constraints"></textarea>
-          </label>
-          <div class="actions">
-            <button class="btn next" data-next="2" type="button">Next</button>
-          </div>
+          <div class="actions"><button class="btn next" data-next="2" type="button">Next</button></div>
         </fieldset>
 
-        <!-- Step 2: Size -->
+        <!-- Step 2 -->
         <fieldset class="card step-panel" data-step-panel="2">
           <legend>Size</legend>
-          <div class="grid three">
-            <label>
-              Columns (blocks across)
-              <input id="cols" name="cols" type="number" min="1" value="6" />
-            </label>
-            <label>
-              Rows (blocks down)
-              <input id="rows" name="rows" type="number" min="1" value="8" />
-            </label>
-            <label>
-              Block size (inches)
-              <input id="blockIn" name="blockIn" type="number" min="1" value="10" />
-            </label>
+          <div class="grid gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <label class="control"><span>Blocks across</span><input id="blocksWide" type="number" min="1" step="1"></label>
+              <label class="control"><span>Blocks down</span><input id="blocksHigh" type="number" min="1" step="1"></label>
+              <label class="control"><span>Block width (in)</span><input id="blockWidth" type="number" min="1" step="0.25"></label>
+              <label class="control"><span>Block height (in)</span><input id="blockHeight" type="number" min="1" step="0.25"></label>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <label class="control"><span>Sashing (in)</span><input id="sashing" type="number" min="0" step="0.25"></label>
+              <label class="control"><span>Border (in)</span><input id="border" type="number" min="0" step="0.5"></label>
+              <label class="control">
+                <span>Seam allowance</span>
+                <select id="seam">
+                  <option value="0.25">1/4 in</option>
+                  <option value="0.375">3/8 in</option>
+                  <option value="0.5">1/2 in</option>
+                  <option value="custom">Custom</option>
+                </select>
+              </label>
+              <label id="seamCustomWrap" class="control hidden"><span>Custom seam (in)</span><input id="seamCustom" type="number" min="0.125" step="0.0625"></label>
+            </div>
           </div>
-          <div class="grid three">
-            <label>
-              Sashing (inches)
-              <input id="sashingIn" name="sashingIn" type="number" min="0" step="0.25" value="0" />
-            </label>
-            <label>
-              Border (inches)
-              <input id="borderIn" name="borderIn" type="number" min="0" step="0.5" value="0" />
-            </label>
-            <label>
-              Seam allowance
-              <select id="seamIn" name="seamIn">
-                <option value="0.25">¼ in</option>
-                <option value="0.375">⅜ in</option>
-                <option value="0.5">½ in</option>
-              </select>
-            </label>
-          </div>
-          <p class="help">We’ll show finished top dimensions based on your inputs.</p>
           <div class="actions">
-            <button class="btn prev" data-prev="1" type="button">Back</button>
+            <button class="btn secondary prev" data-prev="1" type="button">Back</button>
             <button class="btn next" data-next="3" type="button">Next</button>
           </div>
         </fieldset>
 
-        <!-- Step 3: Design -->
+        <!-- Step 3 -->
         <fieldset class="card step-panel" data-step-panel="3">
-          <legend>Design</legend>
-          <div class="grid three">
-            <label>
-              Color A
-              <input id="colorA" name="colorA" type="color" value="#eab308" />
-            </label>
-            <label>
-              Color B
-              <input id="colorB" name="colorB" type="color" value="#22c55e" />
-            </label>
-            <label>
-              Color C
-              <input id="colorC" name="colorC" type="color" value="#3b82f6" />
-            </label>
+          <legend>Fabric</legend>
+          <div class="grid gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              <label class="control"><span>Block WOF (in)</span><input id="wof_block" type="number" min="36" step="1"></label>
+              <label class="control"><span>Sashing WOF (in)</span><input id="wof_sashing" type="number" min="36" step="1"></label>
+              <label class="control"><span>Border WOF (in)</span><input id="wof_border" type="number" min="36" step="1"></label>
+              <label class="control"><span>Binding WOF (in)</span><input id="wof_binding" type="number" min="36" step="1"></label>
+              <label class="control"><span>Backing WOF (in)</span><input id="wof_backing" type="number" min="36" step="1"></label>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              <label class="control"><span>$/yd (blocks)</span><input id="price_blocks" type="number" min="0" step="0.01"></label>
+              <label class="control"><span>$/yd (sashing)</span><input id="price_sashing" type="number" min="0" step="0.01"></label>
+              <label class="control"><span>$/yd (border)</span><input id="price_border" type="number" min="0" step="0.01"></label>
+              <label class="control"><span>$/yd (binding)</span><input id="price_binding" type="number" min="0" step="0.01"></label>
+              <label class="control"><span>$/yd (backing)</span><input id="price_backing" type="number" min="0" step="0.01"></label>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <label class="control"><span>Binding strip (in)</span><input id="binding_strip" type="number" min="2" step="0.25"></label>
+              <label class="control"><span>Batting width (in)</span><input id="batting_width" type="number" min="45" step="1"></label>
+              <label class="control"><span>Batting price ($)</span><input id="batting_price" type="number" min="0" step="0.01"></label>
+            </div>
+            <div class="table" id="fabricTable"></div>
           </div>
-          <label class="block">
-            Pattern
-            <select id="pattern" name="pattern">
-              <option value="checker">Checker</option>
-              <option value="stripes">Stripes</option>
-              <option value="random">Random</option>
-            </select>
-          </label>
           <div class="actions">
-            <button class="btn prev" data-prev="2" type="button">Back</button>
+            <button class="btn secondary prev" data-prev="2" type="button">Back</button>
             <button class="btn next" data-next="4" type="button">Next</button>
           </div>
         </fieldset>
 
-        <!-- Step 4: Fabric estimates -->
+        <!-- Step 4 -->
         <fieldset class="card step-panel" data-step-panel="4">
-          <legend>Fabric</legend>
-          <p class="help">These are safe, rounded estimates for planning. Always buy a little extra.</p>
-          <div id="fabricTable" class="table"></div>
+          <legend>Cost</legend>
+          <div id="costOut" class="text-sm text-slate-700"></div>
           <div class="actions">
-            <button class="btn prev" data-prev="3" type="button">Back</button>
+            <button class="btn secondary prev" data-prev="3" type="button">Back</button>
             <button class="btn next" data-next="5" type="button">Next</button>
           </div>
         </fieldset>
 
-        <!-- Step 5: Plan -->
+        <!-- Step 5 -->
         <fieldset class="card step-panel" data-step-panel="5">
           <legend>Plan</legend>
-          <div class="actions padless">
-            <button id="copyBtn" class="btn" type="button">Copy plan</button>
-            <button id="downloadBtn" class="btn secondary" type="button">Download JSON</button>
+          <div class="flex gap-2 mb-2">
+            <button id="copyBtn" class="btn">Copy plan</button>
+            <button id="downloadBtn" class="btn-secondary">Download JSON</button>
           </div>
           <pre id="planOut" class="plan"></pre>
           <div class="actions">
-            <button class="btn prev" data-prev="4" type="button">Back</button>
+            <button class="btn secondary prev" data-prev="4" type="button">Back</button>
           </div>
         </fieldset>
       </form>
     </section>
 
-    <aside class="preview">
-      <canvas id="previewCanvas" width="600" height="600" aria-label="Quilt preview"></canvas>
-      <div id="dimOut" class="dims" aria-live="polite"></div>
+    <aside class="preview card">
+      <canvas id="previewCanvas" width="700" height="700" aria-label="Quilt preview" class="rounded-md border border-slate-200"></canvas>
+      <div id="dimOut" class="text-sm text-slate-600"></div>
     </aside>
   </main>
 
-  <footer class="site-footer">
-    <p>Built for GitHub Pages. No frameworks. Mobile-first.</p>
+  <footer class="w-full border-t border-slate-200">
+    <div class="mx-auto max-w-6xl px-4 py-6 text-center text-sm text-slate-600">
+      Built as a static site — ideal for GitHub Pages.
+    </div>
   </footer>
 
   <script src="app.js"></script>
